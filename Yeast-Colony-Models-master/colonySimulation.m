@@ -1,5 +1,5 @@
 function [cellsno, time, stateLattice] = colonySimulation(nSteps,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,MUTATION_ON,MUTATION_PROB,DISPLAY_IMAGE)
-% NewUnipolarBuddingwithEMFs models the growth of a yeast colony under the
+% colonySimulation models the growth of a yeast colony under the
 % influence of both nutrient concentrations and a static magnetic field.
 
 p = inputParser;
