@@ -77,7 +77,6 @@ def main():
                     for diff in diffusion_list:
                         df = pd.read_csv(file)
                         df = df[df.diffusion == diff]
-                        df = df[df.concentrations != 'medium']
 
                         # make violin plot
                         fig = go.Figure()
