@@ -127,7 +127,9 @@ function fileName = buildFileNameStr(MF,nSteps,concentration,budNutrs,strength,p
         nutrientString = 'low';
     end
 
-    if strength == 1
+    if strength > 1
+        strengthString = 'extraStrong';
+    elseif strength == 1
         strengthString = 'strong';
     elseif strength > 0
         strengthString = 'weak';
