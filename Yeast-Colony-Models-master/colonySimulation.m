@@ -162,9 +162,6 @@ if DISPLAY_IMAGE == true
     disp('Axial Frac:')
     disp(num2str(AXIAL_FRAC))
 
-    disp('Final Cell Count:')
-    disp(num2str(FINAL_CELL_COUNT))
-
     % Visualise initial states.
 
     disp('Press any key...')
@@ -180,7 +177,7 @@ prevno = 0;
 
 whileCondition = endCondition(FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,cellsno,time);
 
-% Run program until there are FINAL_CELL_COUNT cells
+% Run program until the end condition is met
 while whileCondition  
     % Apply nutrient movement rule
     containsNutrient = false;
