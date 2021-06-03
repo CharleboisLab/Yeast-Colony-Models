@@ -8,6 +8,11 @@ from pathlib import Path
 
 def main():
 
+    ploidy_list = ['haploid', 'diploid']
+    budding_list = ['not_unipolar']
+    diffusion_list = ['with_diffusion']
+    end_list = ['time', 'count']
+    
     y_axis_measurements = ['finalCellCounts',
                            'roundnessList',
                            'compactnessList',
@@ -59,11 +64,6 @@ def main():
     # set image dimensions
     height_int = 1300
     width_int = 1700
-
-    ploidy_list = ['haploid', 'diploid']
-    budding_list = ['not_unipolar']
-    diffusion_list = ['with_diffusion']
-    end_list = ['time', 'count']
 
     for end_condition in end_list:
         for ploidy in ploidy_list:
@@ -191,7 +191,6 @@ def main():
                             '_' + diff + \
                             '_violin_plot.pdf'
                         fig.write_image(file_name)
-                        # fig.show()
 
 
 main()
