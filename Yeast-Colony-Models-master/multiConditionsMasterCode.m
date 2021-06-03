@@ -9,15 +9,12 @@ MIN_ANGLE = 30;   % the minimum angle from the magnetic field of the range of an
 MAX_ANGLE = 150;   % the maximum angle from the magnetic field of the range of angles the MF biases budding towards.
 NUMBER_OF_RUNS = 200;
 
-% Loops through all necessary parameters. Could take up to 24 hours. Can be
-% broken up by shortening arrays to only some of the parameters and running
-% the loop multiple times with the different parameters.
 endArray = {'time','count'};   %% 'time' = ends after FINAL_TIMESTEP time steps, 'count' = ends after colony reaches FINAL_CELL_COUNT cells
 unipolarArray = [false];   %% true = cells switch to filamentous growth in low nutrients, false = cells never switch to filamentous growth
 ploidyArray = [0.6 0];   %% 0.6 = haploid, 0 = diploid
 diffusionArray = [10];   %% 0 = no diffusion, >0 = diffusion
 concentrationArray = [2 20];   %% [0,5] = low nutrients, [6,16] = some nutrients, >16 = rich nutrients
-strengthArray = [0 0.5 1];   %% 0 = no MF, 0.5 = weak MF, 1 = strong MF
+strengthArray = [0 0.5 1];   %% 0 = no MF, 0.5 = weak MF, 1 = strong MF, >1 = extra strong MF
 directionArray = [1 1;1 0;1 -1;0 1;0 -1;-1 1;-1 0;-1 -1];
 
 for o = 1:length(endArray)
