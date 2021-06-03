@@ -219,6 +219,15 @@ Where:
        strengths_list = ['strong', 'weak', 'no']   # for strength
        time_count = 'time'   # for endCondition, not a list
    ```
+   Set correct strings for the magnetic field directions (lines 29-32):
+   
+   ```python
+   # Example
+       file_name_list = [['-1', '-1'], ['-1', '0'],
+                      ['-1', '1'], ['0', '-1'],
+                      ['0', '1'], ['1', '-1'],
+                      ['1', '0'], ['1', '1']]
+   ```
 
    format_data.py outputs .csv files to python_output with the naming convention:
 
