@@ -243,7 +243,7 @@ Where:
 
 3. Run split_violin_plots.py:
 
-   Set correct strings according to the name of the .csv files from combine_data.py (lines 63-66):
+   Set correct strings according to the name of the .csv files from combine_data.py (lines 11-14):
 
    ```python
        ploidy_list = ['haploid', 'diploid']   # for ploidy
