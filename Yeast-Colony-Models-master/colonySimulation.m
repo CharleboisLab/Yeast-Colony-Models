@@ -440,24 +440,27 @@ function [didBud,i_d,j_d,i_mc,j_mc] = axialBuddingRule(magneticField,MFStrength,
         p = rand();
         if p < MFStrength
             indices = biasTowardEMF(nearbyAngleInds,emptyCells,magneticField,minAngle,maxAngle,i,j);
+            cellList = emptyCells;
             if isempty(indices)
-                if p <= 1
+                if MFStrength <= 1
                     indices = nearbyAngleInds;
                 else
                     nearbyAngleInds = find(angleArray == nearbyAngle);
                     indices = biasTowardEMF(nearbyAngleInds,neighbours,magneticField,minAngle,maxAngle,i,j);
+                    cellList = neighbours;
                 end
             end
         else
             indices = nearbyAngleInds;
+            cellList = emptyCells;
         end
         
         % Randomly select one of these instances as the location for the
         % new daughter cell.
         randInd = randi(length(indices),1);
         randEmptyCellInd = indices(randInd);
-        i_d = emptyCells(randEmptyCellInd,1);
-        j_d = emptyCells(randEmptyCellInd,2);
+        i_d = cellList(randEmptyCellInd,1);
+        j_d = cellList(randEmptyCellInd,2);
     % If both sites 45 degrees away from the pevious bud site are full,
     % the cell will bud into one of the sites, pushing the existing cell out
     % of the way. If there are no empty site surround the existing cell,
@@ -545,24 +548,27 @@ function [didBud,i_d,j_d,i_mc,j_mc] = polarBuddingRule(magneticField,MFStrength,
         p = rand();
         if p < MFStrength
             indices = biasTowardEMF(maxAngleInds,emptyCells,magneticField,minAngle,maxAngle,i,j);
+            cellList = emptyCells;
             if isempty(indices)
-                if p <= 1
+                if MFStrength <= 1
                     indices = maxAngleInds;
                 else
                     maxAngleInds = find(angleArray == oppAngle | angleArray == secondAngle);
                     indices = biasTowardEMF(maxAngleInds,neighbours,magneticField,minAngle,maxAngle,i,j);
+                    cellList = neighbours;
                 end
             end
         else
             indices = maxAngleInds;
+            cellList = emptyCells;
         end
         
         % Randomly select one of these instances as the location for the
         % new daughter cell.
         randInd = randi(length(indices),1);
         randEmptyCellsInd = indices(randInd);
-        i_d = emptyCells(randEmptyCellsInd,1);
-        j_d = emptyCells(randEmptyCellsInd,2);
+        i_d = cellList(randEmptyCellsInd,1);
+        j_d = cellLIst(randEmptyCellsInd,2);
     % If all three sites which are 135 or 180 degrees away from the
     % previous bud site are full, a random site will be selected and the
     % existing cell will be moved into a random surrounding empty site. If
