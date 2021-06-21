@@ -5,11 +5,11 @@ function masterCode
 %% Parameters
 
 nSteps = 10;   % number of steps that a nutrient packet takes during its random walk, correlates to the diffusion coefficient of the media.
-START_NUTRS = 20;   % number of nutrient packets at each lattice site at the beginning.
+START_NUTRS = 2;   % number of nutrient packets at each lattice site at the beginning.
 NUTRS_FOR_BUDDING = 1;   % number of nutrients necessary for a cell to bud.
 
 AXIAL_FRAC = 0.6;   % overall fraction of cells budding normally which bud axially: 0 = average diploid colony, 0.6 = average haploid colony.
-UNIPOLAR_ON = false;   % logical value sets whether the colony will switch to filamentous growth in low nutrient conditions.
+UNIPOLAR_ON = true;   % logical value sets whether the colony will switch to filamentous growth in low nutrient conditions.
 
 MF_STRENGTH = 0; % probability the magnetic field bias will be applied, used to control the strength of the magnetic field. 1 for strong field, 0 for no field, >1 for full strength field.
 MAGNETIC_FIELD = [1 1];   % vector for the direction of the magnetic field, according to x-y coordinates, not row-column, if there is no magnetic field set to [0 0].

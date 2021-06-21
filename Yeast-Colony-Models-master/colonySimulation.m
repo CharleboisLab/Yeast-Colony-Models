@@ -78,7 +78,7 @@ end
 
 %% Initialisation
 
-deltaUnipolarFrac = 1/(NUTRS_FOR_BUDDING*8);   % change in unipolarFrac for each nutrient packet available to the cell.
+deltaNormalFrac = 1/(NUTRS_FOR_BUDDING*8);   % change in normalFrac for each nutrient packet available to the cell.
 
 if strcmp(TIME_OR_COUNT,'count')
     % Determine the lattice size necessary for the set FINAL_CELL_COUNT
@@ -110,7 +110,7 @@ end
 % See CellWithNutrients.m file for details of what information is saved.
 
 % Build lattice.
-cellLattice = [CellWithNutrients(0,[0 0],START_NUTRS,deltaUnipolarFrac)];
+cellLattice = [CellWithNutrients(0,[0 0],START_NUTRS,deltaNormalFrac)];
 cellLattice = repelem(cellLattice,latticeSize,latticeSize);
 
 % stateLattice is a lattice of ones and zeros indicating only state.
@@ -130,7 +130,7 @@ end
 for k = -2:2
     i = randi([1,8]);
     initialScar = [initialBudScars(i,1),initialBudScars(i,2)];
-    seedCell = CellWithNutrients(1,initialScar,START_NUTRS,deltaUnipolarFrac);
+    seedCell = CellWithNutrients(1,initialScar,START_NUTRS,deltaNormalFrac);
     cellLattice(centre(1)+k,centre(2)) = seedCell;
     stateLattice(centre(1)+k,centre(2)) = 1;
     if MUTATION_ON
@@ -203,7 +203,7 @@ while whileCondition
            % cell consumes a nutrient if one is present
            cellLattice(i_r,j_r) = cellLattice(i_r,j_r).updateNutrients();
            % update unipolar fraction according nutrient concentration
-           cellLattice(i_r,j_r) = cellLattice(i_r,j_r).updateUnipolarFrac();
+           cellLattice(i_r,j_r) = cellLattice(i_r,j_r).updateNormalFrac();
            % check if the cell is able to bud
            cellLattice(i_r,j_r) = cellLattice(i_r,j_r).updateBuddability(NUTRS_FOR_BUDDING);
            
@@ -373,7 +373,7 @@ function [didBud,unipolarBud,i_d,j_d,i_mc,j_mc,motherBudScar,daughterBudScar,ext
 
         % Determine what budding pattern the cell will follow.
         p1 = rand();
-        if p1 < cellLattice(i,j).unipolarFrac || (unipolar_on == false)
+        if p1 < cellLattice(i,j).normalFrac || (unipolar_on == false)
             if cellLattice(i,j).budded == false
                 p2 = rand();
                 if p2<axialFrac
@@ -568,7 +568,7 @@ function [didBud,i_d,j_d,i_mc,j_mc] = polarBuddingRule(magneticField,MFStrength,
         randInd = randi(length(indices),1);
         randEmptyCellsInd = indices(randInd);
         i_d = cellList(randEmptyCellsInd,1);
-        j_d = cellLIst(randEmptyCellsInd,2);
+        j_d = cellList(randEmptyCellsInd,2);
     % If all three sites which are 135 or 180 degrees away from the
     % previous bud site are full, a random site will be selected and the
     % existing cell will be moved into a random surrounding empty site. If
