@@ -588,15 +588,6 @@ function [didBud,i_d,j_d,i_mc,j_mc] = polarBuddingRule(magneticField,MFStrength,
         % determine the indices for every instance of oppAngle and
         % secondAngle in angleArray
         maxAngleInds = find(angleArray == oppAngle | angleArray == secondAngle);
-%         disp('og angle array')
-%         disp(angleArray)
-%         disp('inds')
-%         disp(maxAngleInds)
-%         disp('new angles')
-%         for k = 1:length(maxAngleInds)
-%             ind = maxAngleInds(k);
-%             disp(angleArray(ind))
-%         end
         
         % Add EMF bias condition.
         p = rand();
