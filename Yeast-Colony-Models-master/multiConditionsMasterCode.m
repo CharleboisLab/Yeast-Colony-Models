@@ -10,7 +10,7 @@ MAX_ANGLE = 150;   % the maximum angle from the magnetic field of the range of a
 NUMBER_OF_RUNS = 200;
 
 endArray = {'time','count'};   %% 'time' = ends after FINAL_TIMESTEP time steps, 'count' = ends after colony reaches FINAL_CELL_COUNT cells
-unipolarArray = [true false];   %% true = cells switch to filamentous growth in low nutrients, false = cells never switch to filamentous growth
+unipolarArray = [false];   %% true = cells switch to filamentous growth in low nutrients, false = cells never switch to filamentous growth
 ploidyArray = [0.6 0];   %% 0.6 = haploid, 0 = diploid
 diffusionArray = [10];   %% 0 = no diffusion, >0 = diffusion
 concentrationArray = [2 20];   %% [0,5] = low nutrients, [6,16] = some nutrients, >16 = rich nutrients

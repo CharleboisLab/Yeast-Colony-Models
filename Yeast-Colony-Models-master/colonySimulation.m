@@ -174,6 +174,8 @@ time=0;
 %% Run
 cellsno = countCells(stateLattice,iMin,jMin,iMax,jMax);   % number of cells alive on the lattice
 prevno = 0;
+unipolarBuds = 0;
+normalBuds = 0;
 
 whileCondition = endCondition(FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,cellsno,time);
 
@@ -252,6 +254,11 @@ while whileCondition
                                 cellLattice(i_mc,j_mc).mutated = true;
                             end
                         end
+                    end
+                    if unipolarBud
+                        unipolarBuds = unipolarBuds + 1;
+                    else
+                        normalBuds = normalBuds + 1;
                     end
                     
                     % update mother cell
@@ -336,6 +343,10 @@ if DISPLAY_IMAGE == true
     drawnow;
     disp('All done!')
 end
+disp('unipolar buds:')
+disp(unipolarBuds)
+disp('normal buds:')
+disp(normalBuds)
 
 end
 
@@ -576,7 +587,16 @@ function [didBud,i_d,j_d,i_mc,j_mc] = polarBuddingRule(magneticField,MFStrength,
     else
         % determine the indices for every instance of oppAngle and
         % secondAngle in angleArray
-        maxAngleInds = find(angleArray == oppAngle | secondAngle);
+        maxAngleInds = find(angleArray == oppAngle | angleArray == secondAngle);
+%         disp('og angle array')
+%         disp(angleArray)
+%         disp('inds')
+%         disp(maxAngleInds)
+%         disp('new angles')
+%         for k = 1:length(maxAngleInds)
+%             ind = maxAngleInds(k);
+%             disp(angleArray(ind))
+%         end
         
         % Add EMF bias condition.
         p = rand();
@@ -652,7 +672,7 @@ function [unipolarBud,i_d,j_d,i_mc,j_mc] = unipolarBuddingRule(magneticField,MFS
 
        % determine the indices for every instance of oppAngle and
        % secondAngle in emptyAngleArray
-        maxAngleInds = find(emptyAngleArray == oppAngle | secondAngle);
+        maxAngleInds = find(emptyAngleArray == oppAngle | emptyAngleArray == secondAngle);
 
         % Add EMF bias condition.
         p = rand();
