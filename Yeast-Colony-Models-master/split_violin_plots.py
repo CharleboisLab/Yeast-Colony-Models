@@ -8,10 +8,10 @@ from pathlib import Path
 
 def main():
 
-    ploidy_list = ['haploid', 'diploid']
+    ploidy_list = ['haploid','diploid']
     budding_list = ['not_unipolar']
     diffusion_list = ['with_diffusion']
-    end_list = ['time', 'count']
+    end_list = ['time','count']
     
     y_axis_measurements = ['finalCellCounts',
                            'roundnessList',
@@ -30,7 +30,7 @@ def main():
         ('compactnessList', 'compactness'),
         ('convexityList', 'convexity'),
         ('boundary_fluctuations', 'boundary fluctuations'),
-        ('timeList', 'timestep'),
+        ('timeList', 'colony formation time (timestep)'),
         ('perimeterList', 'perimeter  (pixels)'),
         ('solidityList', 'solidity'),
         ('elongationList', 'elongation'),
@@ -78,7 +78,7 @@ def main():
                         df = pd.read_csv(file)
                         df = df[df.diffusion == diff]
 
-                        # make violin plot
+                    ### make weak vs strong violin plot
                         fig = go.Figure()
 
                         # weak diagonal MF trace
@@ -191,5 +191,117 @@ def main():
                             '_violin_plot.pdf'
                         fig.write_image(file_name)
 
+                    ### make strong vs extra strong violin plot
+                        fig = go.Figure()
+
+                        # strong diagonal MF trace
+                        fig.add_trace(go.Violin(x=df['concentrations'][(
+                            df['directionType'] == 'diagonal') & (
+                            df['strength'] == 'strong')],
+                            y=df[measurement][(
+                                df['directionType'] == 'diagonal') & (
+                                df['strength'] == 'strong')],
+                            legendgroup='diagonal',
+                            name='strong diagonal MFs',
+                            box_visible=True,
+                            meanline_visible=True,
+                            side='negative',
+                            offsetgroup='diagonal'))
+
+                        # extra strong diagonal MF trace
+                        fig.add_trace(go.Violin(x=df['concentrations'][(
+                            df['directionType'] == 'diagonal') & (
+                            df['strength'] == 'extraStrong')],
+                            y=df[measurement][(
+                                df['directionType'] == 'diagonal') & (
+                                df['strength'] == 'extraStrong')],
+                            legendgroup='diagonal',
+                            name='extra strong diagonal MFs',
+                            box_visible=True,
+                            meanline_visible=True,
+                            side='positive',
+                            offsetgroup='diagonal'))
+
+                        # strong axial MF trace
+                        fig.add_trace(go.Violin(x=df['concentrations'][(
+                            df['directionType'] == 'axis') & (
+                            df['strength'] == 'strong')],
+                            y=df[measurement][(
+                                df['directionType'] == 'axis') & (
+                                df['strength'] == 'strong')],
+                            legendgroup='axis',
+                            name='strong axial MFs',
+                            box_visible=True,
+                            meanline_visible=True,
+                            side='negative',
+                            offsetgroup='axis'))
+
+                        # extra strong axial MF trace
+                        fig.add_trace(go.Violin(x=df['concentrations'][(
+                            df['directionType'] == 'axis') & (
+                            df['strength'] == 'extraStrong')],
+                            y=df[measurement][(
+                                df['directionType'] == 'axis') & (
+                                df['strength'] == 'extraStrong')],
+                            legendgroup='axis',
+                            name='extra strong axial MFs',
+                            box_visible=True,
+                            meanline_visible=True,
+                            side='positive',
+                            offsetgroup='axis'))
+
+                        # no MF trace
+                        fig.add_trace(go.Violin(x=df['concentrations'][(
+                            df['directionType'] == 'none')],
+                            y=df[measurement][(
+                                df['directionType'] == 'none')],
+                            legendgroup='none',
+                            name='no MFs',
+                            box_visible=True,
+                            meanline_visible=True,
+                            offsetgroup='none'))
+
+                        # formatting the figure
+                        fig.update_traces(meanline_visible=True, points=False)
+                        fig.update_layout(yaxis_title=y_axis_labels[
+                                          measurement],
+                                          xaxis_title=x_axis_labels[diff],
+                                          violinmode='group',
+                                          paper_bgcolor='rgba(\
+                                          255,255,255,255)',
+                                          plot_bgcolor='rgba(255,255,255,255)',
+                                          legend=dict(
+                            font=dict(size=legend_font_size)),
+                            height=height_int,
+                            width=width_int)
+                        fig.update_xaxes(title_font=dict(size=axis_font_size),
+                                         tickfont=dict(
+                                             size=xaxis_tick_font_size),
+                                         mirror=True,
+                                         ticks='outside',
+                                         showline=True)
+                        fig.update_yaxes(title_font=dict(size=axis_font_size),
+                                         tickfont=dict(
+                                             size=yaxis_tick_font_size),
+                                         mirror=True,
+                                         ticks='outside',
+                                         showline=True,
+                                         gridcolor='Grey')
+
+                        # save figure file
+                        directory_name = './figures_output/' + ploidy + '_' + \
+                                         bud + '_figures'
+                        if not os.path.isdir(directory_name):
+                            directory_name = directory_name[2:]
+                            os.mkdir(directory_name)
+                        file_name = 'figures_output/' + \
+                            ploidy + '_' + \
+                            bud + \
+                            '_figures/' + \
+                            end_condition + '_extra_strength_' + \
+                            y_axis_file_name[measurement] + \
+                            '_' + diff + \
+                            '_violin_plot.pdf'
+                        fig.write_image(file_name)
 
 main()

@@ -20,9 +20,10 @@ stdDevLengthList = zeros(NUMBER_OF_RUNS,1);
 
 %% Run
 parfor i = 1:NUMBER_OF_RUNS
-    [cellno, time, stateLattice] = colonySimulation(DIFFUSION_STEPS,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,false,0,false);
+    [~, cellno, time, stateLattice] = colonySimulation(DIFFUSION_STEPS,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,false,0,false);
 
 %% Save Results
+
     finalCellCounts(i) = cellno;
     
     timeList(i) = time;
@@ -106,10 +107,13 @@ end
 
 % Build table containing all measurements. Output as an .xlsx file into
 % folder titled "matlab_output"
-t = table(finalCellCounts,timeList,perimeterList,areaList,convexityList,solidityList,densityList,compactnessList,roundnessList,elongationList,holesList,meanLengthsList,stdDevLengthList);
-fileName1 = buildFileNameStr(MAGNETIC_FIELD,DIFFUSION_STEPS,START_NUTRS,NUTRS_FOR_BUDDING,MF_STRENGTH,AXIAL_FRAC,UNIPOLAR_ON,TIME_OR_COUNT);
-fileName = strcat('matlab_output/',fileName1);
-writetable(t,fileName);
+t1 = table(finalCellCounts,timeList,perimeterList,areaList,convexityList,solidityList,densityList,compactnessList,roundnessList,elongationList,holesList,meanLengthsList,stdDevLengthList);
+
+fileName = buildFileNameStr(MAGNETIC_FIELD,DIFFUSION_STEPS,START_NUTRS,NUTRS_FOR_BUDDING,MF_STRENGTH,AXIAL_FRAC,UNIPOLAR_ON,TIME_OR_COUNT);
+
+fileName1 = strcat('matlab_output/',fileName);
+
+writetable(t1,fileName1);
 
 %% Name File
 function fileName = buildFileNameStr(MF,nSteps,concentration,budNutrs,strength,ploidy,unipolar_on,end_condition)

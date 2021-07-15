@@ -30,7 +30,7 @@ A lattice-based simulation of yeast colony growth under a number of different co
 | filename                    | description                                                  |
 | --------------------------- | ------------------------------------------------------------ |
 | colonySimulation.m          | Run a single simulation of yeast colony growth.              |
-| masterCode.m                | Runs colonySimulation.m a single time with the given parameters. |
+| masterCode.m                | Runs colonySimulation.m a single time with the given parameters. If GET_BUDDING_ANGLES is true, outputs a .xlsx file of budding angles in matlab_output/budding_angles folder. |
 | multiRunsMasterCode.m       | Runs colonySimulation.m a set number of times and outputs results into an .xlsx file in matlab_output folder. |
 | multiConditionsMasterCode.m | Runs multiRunsMasterCode.m multiple times for a list of different parameters. |
 | CellWithNutrients.m         | Class describing the cell state and nutrient concentration at a given lattice point. |
@@ -39,33 +39,36 @@ A lattice-based simulation of yeast colony growth under a number of different co
 
 #### Python files:
 
-| filename              | description                                                  |
-| --------------------- | ------------------------------------------------------------ |
-| format_data.py        | Formats and collects output results into matlab_output folder into .csv files for each magnetic field direction and ploidy saved in python_output folder. |
-| combine_data.py       | Collects the output files from format_data.py found in python_output folder into .csv files for each ploidy saved in python_output folder. |
-| split_violin_plots.py | Dreates violin plots from .csv files output by combine_data.py. Saves plots in figures_output folder. |
+| filename                        | description                                                  |
+| ------------------------------- | ------------------------------------------------------------ |
+| format_data.py                  | Formats and collects output results into matlab_output folder into .csv files for each magnetic field direction and ploidy saved in python_output folder. |
+| combine_data.py                 | Collects the output files from format_data.py found in python_output folder into .csv files for each ploidy saved in python_output folder. |
+| split_violin_plots.py           | Creates violin plots from .csv files output by combine_data.py. Saves plots in figures_output folder. |
+| haploid_v_diploid_area_plots.py | Creates a violin plot comparing haploid and diploid colony area from .csv files output by combine_data.py. Saves plots in figures_output folder. |
+| budding_angle_dist_plots.py     | Creates a polar bar chart of budding angles from the .xlsx file output by masterCode.m. Saves plots in figures_output folder. |
 
 ## Usage
 
 ### Overview of simulation parameters
 
-| parameter         | description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| nSteps            | Number of steps a single nutrient packet will take on its random walk. A higher nSteps corresponds to a more diffusive media |
-| START_NUTRS       | Number of nutrient packets at every lattice point at the beginning of the simulation. Represents initial nutrient concentration. |
-| NUTRS_FOR_BUDDING | Number of nutrient packets a cell must consume in order to bud. |
-| AXIAL_FRAC        | Fraction of cells which will bud axially.                    |
-| UNIPOLAR_ON       | true for pseudohyphal growth, false for no pseudohyphal growth condition |
-| MF_STRENGTH       | Fraction of the time that the magnetic field bias is applied. Set to 0 for no magnetic field. |
-| MAGNETIC_FIELD    | Vector setting the direction of the magnetic field.          |
-| MIN_ANGLE         | The lower end of the range of angles into which the cell will be biased toward budding. |
-| MAX_ANGLE         | The upper end of the range of angles into which the cell will be biased toward budding. |
-| TIME_OR_COUNT     | Set to 'time' for simulation to end after a set number of timesteps. Set to 'count' for simulation to end when the colony reaches a set number of cells |
-| FINAL_CELL_COUNT  | Number of cells for the colony to reach in order to stop the simulation, if TIME_OR_COUNT = 'count' |
-| FINAL_TIMESTEP    | Number of timesteps the simulation will run for if TIME_OR_COUNT = 'time' |
-| MUTATION_ON       | true for cells to mutate, false for cells not to mutate      |
-| MUTATION_PROB     | Probability of a cell mutating if MUTATION_ON = true         |
-| DISPLAY_IMAGE     | true for a visualisation of the colony to be shown, false otherwise |
+| parameter          | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| nSteps             | Number of steps a single nutrient packet will take on its random walk. A higher nSteps corresponds to a more diffusive media |
+| START_NUTRS        | Number of nutrient packets at every lattice point at the beginning of the simulation. Represents initial nutrient concentration. |
+| NUTRS_FOR_BUDDING  | Number of nutrient packets a cell must consume in order to bud. |
+| AXIAL_FRAC         | Fraction of cells which will bud axially.                    |
+| UNIPOLAR_ON        | true for pseudohyphal growth, false for no pseudohyphal growth condition |
+| MF_STRENGTH        | Fraction of the time that the magnetic field bias is applied. Set to 0 for no magnetic field. |
+| MAGNETIC_FIELD     | Vector setting the direction of the magnetic field.          |
+| MIN_ANGLE          | The lower end of the range of angles into which the cell will be biased toward budding. |
+| MAX_ANGLE          | The upper end of the range of angles into which the cell will be biased toward budding. |
+| TIME_OR_COUNT      | Set to 'time' for simulation to end after a set number of timesteps. Set to 'count' for simulation to end when the colony reaches a set number of cells |
+| FINAL_CELL_COUNT   | Number of cells for the colony to reach in order to stop the simulation, if TIME_OR_COUNT = 'count' |
+| FINAL_TIMESTEP     | Number of timesteps the simulation will run for if TIME_OR_COUNT = 'time' |
+| MUTATION_ON        | true for cells to mutate, false for cells not to mutate      |
+| MUTATION_PROB      | Probability of a cell mutating if MUTATION_ON = true         |
+| DISPLAY_IMAGE      | true for a visualisation of the colony to be shown, false otherwise |
+| GET_BUDDING_ANGLES | true to output budding angles, false otherwise               |
 
 ### Running simulations
 
@@ -180,6 +183,10 @@ Results are output in .xlsx files with the naming convention:
 
 ​	*endCondition* _ *unipolar* _ *ploidy* _ *nutrientConc* _ *strength*MF _ *direction* _ *diffusion* _ file.xlsx
 
+Budding angle results are output in .xlsx files with the naming convention:
+
+​	buddingAngles_*endCondition* _ *unipolar* _ *ploidy* _ *nutrientConc* _ *strength*MF _ *direction* _ *diffusion* _ file.xlsx
+
 Where:
 
 - *endCondition* = `TIME_OR_COUNT`
@@ -265,6 +272,6 @@ Where:
 Code was written by Rebekah Hall under the supervision of Dr. Daniel Charlebois. 
 
 
-   
 
-   
+
+

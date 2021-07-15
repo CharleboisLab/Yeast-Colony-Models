@@ -8,11 +8,11 @@ nSteps = 10;   % number of steps that a nutrient packet takes during its random 
 START_NUTRS = 2;   % number of nutrient packets at each lattice site at the beginning.
 NUTRS_FOR_BUDDING = 1;   % number of nutrients necessary for a cell to bud.
 
-AXIAL_FRAC = 0.6;   % overall fraction of cells budding normally which bud axially: 0 = average diploid colony, 0.6 = average haploid colony.
+AXIAL_FRAC = 0;   % overall fraction of cells budding normally which bud axially: 0 = average diploid colony, 0.6 = average haploid colony.
 UNIPOLAR_ON = false;   % logical value sets whether the colony will switch to filamentous growth in low nutrient conditions.
 
-MF_STRENGTH = 1; % probability the magnetic field bias will be applied, used to control the strength of the magnetic field. 1 for strong field, 0 for no field, >1 for full strength field.
-MAGNETIC_FIELD = [1 1];   % vector for the direction of the magnetic field, according to x-y coordinates, not row-column, if there is no magnetic field set to [0 0].
+MF_STRENGTH = 0; % probability the magnetic field bias will be applied, used to control the strength of the magnetic field. 1 for strong field, 0 for no field, >1 for full strength field.
+MAGNETIC_FIELD = [1 0];   % vector for the direction of the magnetic field, according to x-y coordinates, not row-column, if there is no magnetic field set to [0 0].
 MIN_ANGLE = 30;   % the minimum angle from the magnetic field of the range of angles the MF biases budding towards.
 MAX_ANGLE = 150;   % the maximum angle from the magnetic field of the range of angles the MF biases budding towards.
 
@@ -20,13 +20,14 @@ TIME_OR_COUNT = 'time';   % string or char to set end condition. 'count' to stop
 FINAL_CELL_COUNT = 10000;   % number of cells that colony should reach in order fo the program to stop.
 FINAL_TIMESTEP = 320000;   % number of timesteps the program will go to before stopping.
 
-MUTATION_ON = true;   % logical value sets whether mutations will occur.
+MUTATION_ON = false;   % logical value sets whether mutations will occur.
 MUTATION_PROB = 0;   % set probability of mutation occuring during during budding.
 
 DISPLAY_IMAGE = true;   % logical value sets whether the colony will be displayed graphically as it grows throughout the simulation.
+GET_BUDDING_ANGLES = false;
 
 %% Run
-[cellno, time, stateLattice] = colonySimulation(nSteps,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,MUTATION_ON,MUTATION_PROB,DISPLAY_IMAGE);
+[buddingAngles, cellno, time, stateLattice] = colonySimulation(nSteps,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,MUTATION_ON,MUTATION_PROB,DISPLAY_IMAGE);
 
 %% Display Results
 
@@ -117,6 +118,63 @@ disp(meanNormRadialLength)
 disp('standard deviation of normalised radial lengths')
 disp(normRadialLengthStandDev)
 
+%% Create Budding Angles Table
+if GET_BUDDING_ANGLES
+    fileName = buildFileNameStr(MAGNETIC_FIELD,nSteps,START_NUTRS,NUTRS_FOR_BUDDING,MF_STRENGTH,AXIAL_FRAC,UNIPOLAR_ON,TIME_OR_COUNT);
+    fileName1 = strcat('matlab_output/budding_angles/buddingAngles_',fileName);
+    t1 = table(buddingAngles);
+    writetable(t1,fileName1);
+end
 
+%% Name File
+function fileName = buildFileNameStr(MF,nSteps,concentration,budNutrs,strength,ploidy,unipolar_on,end_condition)
+    % Creates string for the name of the file which will be output based on
+    % given parameters.
+    MFstring1 = num2str(MF(1));
+    MFstring2 = num2str(MF(2));
+    MFString = strcat('(',MFstring1,'_',MFstring2,')');
+    
+    if concentration > 16*budNutrs
+        nutrientString = 'rich';
+    elseif concentration > 5*budNutrs
+        nutrientString = 'medium';
+    else
+        nutrientString = 'low';
+    end
 
+    if strength > 1
+        strengthString = 'extraStrong';
+    elseif strength == 1
+        strengthString = 'strong';
+    elseif strength > 0
+        strengthString = 'weak';
+    else
+        strengthString = 'no';
+    end
 
+    if ploidy == 0.6
+        ploidyString = 'haploid';
+    elseif ploidy == 0
+        ploidyString = 'diploid';
+    else
+        ploidyString1 = 'ploidynum_';
+        ploidyString2 = num2str(ploidy);
+        ploidyString = strcat(ploidyString1, ploidyString2);
+    end
+    
+    if nSteps == 0
+        diffusionString = 'no_diffusion';
+    else
+        diffusionString = 'with_diffusion';
+    end
+    
+    if unipolar_on
+        unipolarString = 'unipolar';
+    else
+        unipolarString = 'not_unipolar';
+    end
+    
+    fileName = strcat(end_condition,'_',unipolarString,'_',ploidyString,'_',nutrientString,'_',strengthString,'MF_',MFString,'_',diffusionString,'_file.xlsx');
+end
+
+end

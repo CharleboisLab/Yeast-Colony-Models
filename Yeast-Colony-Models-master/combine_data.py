@@ -10,17 +10,17 @@ def main():
 
     output_data_folder = Path("python_output")
 
-    ploidy_list = ['haploid', 'diploid']
+    ploidy_list = ['diploid', 'haploid']
 
     concentration_list = ['rich', 'low']
 
-    strength_list = ['strong', 'weak', 'no']
+    strength_list = ['extraStrong', 'strong', 'weak', 'no']
 
     diffusion_list = ['with_diffusion']
 
     budding_pattern_list = ['not_unipolar']
 
-    time_count = 'count'
+    time_count = 'time'
 
     for ploidy in ploidy_list:
         for bud in budding_pattern_list:

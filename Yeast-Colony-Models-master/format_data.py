@@ -9,11 +9,11 @@ from pathlib import Path
 def main():
 
     budding_pattern_list = ['not_unipolar']
-    ploidy_list = ['haploid', 'diploid']
+    ploidy_list = ['haploid','diploid']
     diffusion_steps_list = ['with_diffusion']
     conc_list = ['rich', 'low']
-    strengths_list = ['strong', 'weak', 'no']
-    time_count = 'count'
+    strengths_list = ['extraStrong','strong', 'weak', 'no']
+    time_count = 'time'
 
     for bud in budding_pattern_list:
         for ploidy in ploidy_list:

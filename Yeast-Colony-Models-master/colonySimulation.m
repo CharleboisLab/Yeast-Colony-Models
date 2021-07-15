@@ -1,4 +1,4 @@
-function [cellsno, time, stateLattice] = colonySimulation(nSteps,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,MUTATION_ON,MUTATION_PROB,DISPLAY_IMAGE)
+function [buddingAngles, cellsno, time, stateLattice] = colonySimulation(nSteps,FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,START_NUTRS,NUTRS_FOR_BUDDING,AXIAL_FRAC,MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,UNIPOLAR_ON,MUTATION_ON,MUTATION_PROB,DISPLAY_IMAGE)
 % colonySimulation models the growth of a yeast colony under the
 % influence of both nutrient concentrations and a static magnetic field.
 
@@ -176,6 +176,8 @@ cellsno = countCells(stateLattice,iMin,jMin,iMax,jMax);   % number of cells aliv
 prevno = 0;
 unipolarBuds = 0;
 normalBuds = 0;
+buddingAngles = zeros(latticeSize^2,1) - 1;
+anglesInd = 1;
 
 whileCondition = endCondition(FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,cellsno,time);
 
@@ -223,6 +225,15 @@ while whileCondition
                 [didBud,unipolarBud,i_d,j_d,i_mc,j_mc,motherBudScar,daughterBudScar,extraBudScar] = buddingRules(MAGNETIC_FIELD,MF_STRENGTH,MIN_ANGLE,MAX_ANGLE,cellLattice,stateLattice,AXIAL_FRAC,UNIPOLAR_ON,i_r,j_r);
                 
                 if didBud
+                    % calculate budding angle
+                    if ~unipolarBud
+                        angle = createScarAngle(daughterBudScar,MAGNETIC_FIELD);
+                    else
+                        angle = createScarAngle(extraBudScar,MAGNETIC_FIELD);
+                    end
+                    buddingAngles(anglesInd) = angle;
+                    anglesInd = anglesInd + 1;
+                    
                     cellLattice(i_d,j_d).budded = true;
                     if i_mc ~= -1 && cellLattice(i_mc,j_mc).state
                         cellLattice(i_d,j_d).budded = true;
@@ -287,7 +298,7 @@ while whileCondition
     
     whileCondition = endCondition(FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,cellsno,time);
 
-    % Display stateLattice.
+    % Display colony image
     if DISPLAY_IMAGE == true
         if cellsno - prevno > 100 || cellsno - prevno > prevno  
             if MUTATION_ON
@@ -317,6 +328,8 @@ while whileCondition
         end
     end 
 end 
+
+% Display final colony image
 if DISPLAY_IMAGE == true
     if MUTATION_ON
         for i = iMin:iMax
@@ -343,10 +356,6 @@ if DISPLAY_IMAGE == true
     drawnow;
     disp('All done!')
 end
-disp('unipolar buds:')
-disp(unipolarBuds)
-disp('normal buds:')
-disp(normalBuds)
 
 end
 
@@ -768,17 +777,16 @@ end
 
 function angleArray = createEMFAngleArray(cellArray,vector,i,j)
 
-    % createAngleArray creates an array containing the angle between each
-    % lattice site in cellArray and the lattice site (i,j).
+    % createEMFAngleArray creates an array containing the angle between the
+    % distance from (i,j) to each site in cellArray and vector
     
     [numRows,~] = size(cellArray);
 
-    % create array containing angle between the vector of the
-    % mother's bud scar and the vector from the mother cell to each
-    % lattice site in cellArray
+    % create array containing angle between the direction of the mF
+    % and the vector from the mother cell to each lattice site in cellArray
     angleArray = zeros(numRows,1);
     for k = 1:numRows
-        if (cellArray(k,1) + cellArray(k,2)) ~= 0
+        if (cellArray(k,1) ~= 0) || (cellArray(k,2) ~= 0)
             i_2 = cellArray(k,1) - i;
             j_2 = cellArray(k,2) - j;
             norm2 = norm([i_2 j_2]);
@@ -792,8 +800,27 @@ function angleArray = createEMFAngleArray(cellArray,vector,i,j)
         else
             angleArray(k) = 0;
         end
-    end
+    end   
+end
+
+%% Angle Array for Bud and Birth Scars
+
+function angle = createScarAngle(scar,vector)
     
+    if (scar(1) ~= 0) || (scar(2) ~= 0)
+        cartesianScar = [scar(2); -scar(1)];
+        a = vector(1);
+        b = vector(2);
+        new2stan = [-b a; -a -b];
+        determinant = 1/(a^2 + b^2);
+        stan2new = determinant*new2stan;
+        newScar = stan2new*cartesianScar;
+        radsAngle = atan2(newScar(2),newScar(1));
+        angle = (180/pi)*radsAngle;
+    else
+        angle = -1;
+    end
+   
 end
 
 
