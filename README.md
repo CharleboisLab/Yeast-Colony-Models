@@ -1,6 +1,7 @@
 # Yeast-Colony-Models
 
-A lattice-based simulation of yeast colony growth under a number of different conditions including different budding patterns, varying nutrient concentrations, neutral mutations, and the influences of static magnetic fields. 
+A lattice-based simulation of yeast colony growth under a number of different conditions including different budding patterns, varying nutrient concentrations, neutral mutations, and the influences of static magnetic fields. Code was written by Rebekah Hall and questions regarding the code should be directed to rebekah1@ualberta.ca.
+
 
 ## Dependencies 
 
