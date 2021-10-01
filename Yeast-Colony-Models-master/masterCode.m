@@ -5,13 +5,13 @@ function masterCode
 %% Parameters
 
 nSteps = 10;   % number of steps that a nutrient packet takes during its random walk, correlates to the diffusion coefficient of the media.
-START_NUTRS = 2;   % number of nutrient packets at each lattice site at the beginning.
+START_NUTRS = 20;   % number of nutrient packets at each lattice site at the beginning.
 NUTRS_FOR_BUDDING = 1;   % number of nutrients necessary for a cell to bud.
 
 AXIAL_FRAC = 0;   % overall fraction of cells budding normally which bud axially: 0 = average diploid colony, 0.6 = average haploid colony.
 UNIPOLAR_ON = false;   % logical value sets whether the colony will switch to filamentous growth in low nutrient conditions.
 
-MF_STRENGTH = 0; % probability the magnetic field bias will be applied, used to control the strength of the magnetic field. 1 for strong field, 0 for no field, >1 for full strength field.
+MF_STRENGTH = 0.5; % probability the magnetic field bias will be applied, used to control the strength of the magnetic field. 1 for strong field, 0 for no field, >1 for full strength field.
 MAGNETIC_FIELD = [1 0];   % vector for the direction of the magnetic field, according to x-y coordinates, not row-column, if there is no magnetic field set to [0 0].
 MIN_ANGLE = 30;   % the minimum angle from the magnetic field of the range of angles the MF biases budding towards.
 MAX_ANGLE = 150;   % the maximum angle from the magnetic field of the range of angles the MF biases budding towards.
@@ -20,8 +20,8 @@ TIME_OR_COUNT = 'time';   % string or char to set end condition. 'count' to stop
 FINAL_CELL_COUNT = 10000;   % number of cells that colony should reach in order fo the program to stop.
 FINAL_TIMESTEP = 320000;   % number of timesteps the program will go to before stopping.
 
-MUTATION_ON = false;   % logical value sets whether mutations will occur.
-MUTATION_PROB = 0;   % set probability of mutation occuring during during budding.
+MUTATION_ON = true;   % logical value sets whether mutations will occur.
+MUTATION_PROB = 0.003;   % set probability of mutation occuring during during budding.
 
 DISPLAY_IMAGE = true;   % logical value sets whether the colony will be displayed graphically as it grows throughout the simulation.
 GET_BUDDING_ANGLES = false;

@@ -123,13 +123,14 @@ function fileName = buildFileNameStr(MF,nSteps,concentration,budNutrs,strength,p
     MFstring2 = num2str(MF(2));
     MFString = strcat('(',MFstring1,'_',MFstring2,')');
     
-    if concentration > 16*budNutrs
-        nutrientString = 'rich';
-    elseif concentration > 5*budNutrs
-        nutrientString = 'medium';
-    else
-        nutrientString = 'low';
-    end
+%     if concentration > 16*budNutrs
+%         nutrientString = 'rich';
+%     elseif concentration > 5*budNutrs
+%         nutrientString = 'medium';
+%     else
+%         nutrientString = 'low';
+%     end
+    nutrientString = strcat(num2str(concentration),'nutr');
 
     if strength > 1
         strengthString = 'extraStrong';
