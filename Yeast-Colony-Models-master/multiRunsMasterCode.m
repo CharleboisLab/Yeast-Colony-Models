@@ -111,7 +111,7 @@ t1 = table(finalCellCounts,timeList,perimeterList,areaList,convexityList,solidit
 
 fileName = buildFileNameStr(MAGNETIC_FIELD,DIFFUSION_STEPS,START_NUTRS,NUTRS_FOR_BUDDING,MF_STRENGTH,AXIAL_FRAC,UNIPOLAR_ON,TIME_OR_COUNT);
 
-fileName1 = strcat('matlab_output/',fileName);
+fileName1 = strcat('matlab_output/nutrients/',fileName);
 
 writetable(t1,fileName1);
 
