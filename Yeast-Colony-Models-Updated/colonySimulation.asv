@@ -1,0 +1,477 @@
+function [cellCount,mutantCount,subColonyCount,cellsnoList,time,lattices] = colonySimulation(NUTRIENT_STEPS,endConditions,latticeSize,lattices,agarWeight,magnet,UNIPOLAR_ON,displaySettings)
+% colonySimulation models the growth of a yeast colony under the
+% influence of both nutrient concentrations and a static magnetic field.
+
+%%% OUTPUT %%%
+
+% cellCount is a list of the total cell counts each day
+
+% mutantCount is a list of the mutant cell counts each day
+
+% subColonyCount is a list of the subcolony counts each day
+
+% cellsnoList is a list of the final cell counts at the end of the
+% simulation for the total cells, wildtype cells, and mutant cells
+
+% time is the number of timesteps the simulation ran for
+
+% lattices is a structure array representing the final state of the lattice,
+% containing the following fields:
+%     -- 'cells' is a matrix of structure arrays with the following fields:
+%               + 'cell' is 0 if no cell is present, a YeastCell object if
+%                  a cell is present
+%               + 'angle' stores the angles between a bud scar and an
+%                  adjacent cell, see assignAngles method of YeastCell object
+%     -- 'nutrients' is a matrix containing the number of nutrient packets
+%         at each point on the lattice
+%     -- 'states' is a matrix of ones and zeros, where a 1 states that a
+%         cell is a present and 0 states that no cell is present
+%     -- 'mutants' is a matrix of integers representing the cell strain
+%     number, where 1 is the wildtype and 2 is the mutant cell, and 0
+%     indicates no cell is present
+
+%%% PARAMETERS %%%
+
+% NUTRIENT_STEPS is the number of steps that a nutrient packet takes during its 
+% random walk, correlates to the diffusion coefficient of the media.
+
+% endConditions is a structure array containing the following fields:
+%     -- 'finalCellNo' is the number  of cells that colony should reach in 
+%        order fo the program to stop.
+%     -- 'finalTime' is the number of timesteps until the program stops.
+%     -- 'endCondition' is a str which determines whether the end condition will
+%        be based on timesteps of final cell count: 
+%         'timestep' = timestep, 'cell count' = cell count
+
+% latticeSize is a structure array containing the following fields:
+%     -- 'xlatticeSize' is the x dimension size
+%     -- 'ylatticeSize' is the y dimension size
+
+% lattices is a structure array containing the following fields:
+%     -- 'cells' is a matrix of structure arrays with the following fields:
+%               + 'cell' is 0 if no cell is present, a YeastCell object if
+%                  a cell is present
+%               + 'angle' stores the angles between a bud scar and an
+%                  adjacent cell, see assignAngles method of YeastCell object
+%     -- 'nutrients' is a matrix containing the number of nutrient packets
+%         at each point on the lattice
+%     -- 'states' is a matrix of ones and zeros, where a 1 states that a
+%         cell is a present and 0 states that no cell is present
+%     -- 'mutants' is a matrix of integers representing the cell strain
+%     number, where 1 is the wildtype and 2 is the mutant cell, and 0
+%     indicates no cell is present
+
+% agarWeight is a number representing the agar concentration
+% note: agar concentration 
+
+% magnet is a MagneticField object containing the following fields with the
+% parameters of the magnetic field being applied to the colony
+
+% UNIPOLAR_ON is a bool indicating whether the colony will bud in a
+% filamentous pattern in low nutrient conditions.
+
+% displaySettings is a structure array with the following fields:
+%     -- 'displayType' is a str which determines how the colony is visualised:
+%          'show' = display the colony updating as the simulation runs,
+%          'save' = save an image of the colony with each update,
+%          'none' = do not visualise the colony.
+%     -- 'folderName' is a str giving the folder the images will be saved
+%         to if 'displayType' == 'save'
+
+%% Initialisation
+
+% Get end condition info
+endCondition = endConditions.('endCondition');
+finalCellNo = endConditions.('finalCellNo');
+finalTime = endConditions.('finalTime');
+
+% Get diffusion info
+nutrientDiff = NUTRIENT_STEPS;
+
+% Timestep time
+timestep = 0.0129;
+
+% Get display info
+displayType = displaySettings.('displayType');
+folderName = displaySettings.('folderName');
+
+% Sets the range of cells which will be considered under the rules as the
+% cells immediate surrounding the start cell.
+[iMin,iMax,jMin,jMax] = boundaryCoors(lattices.('states'),0,0,0,0,0,0,false);
+
+% Display conditions
+
+map = [0 0 0
+       1 1 1
+       1 0 0
+       1 0.5 0
+       1 1 0
+       0 0.5 0
+       0 0 1
+       0.5 0 0.5];
+
+if strcmp(displayType,'show')
+    % Visualise initial states.
+
+    disp('Press any key...')
+    
+    imageLattice = lattices.('mutants') + 1;
+    image = ind2rgb(imageLattice,map);
+    imshow(image); 
+
+    pause
+elseif strcmp(displayType,'save')
+    % Save initial states.
+    imFileName = strcat(folderName,'/frame1.jpg');
+    imwrite(lattices.('states'),imFileName,'jpg')
+    tt = 2;
+end
+
+time = 0;
+
+%% Run
+cellsno = countCells(lattices,iMin,jMin,iMax,jMax);   % number of cells alive on the lattice
+wtCellsno = countCellsGenotype(lattices,1,iMin,jMin,iMax,jMax);   % number of WT cells on the lattice
+mutantCellsno = countCellsGenotype(lattices,2,iMin,jMin,iMax,jMax);   % number of mutant cells on the lattice
+genoCellsno = [wtCellsno mutantCellsno];   % list of genotype numbers
+
+cellCount = zeros(finalTime,1);
+mutantCount = zeros(finalTime,1);
+subColonyCount = zeros(finalTime,1);
+[~,subColonies] = countMutants(lattices);
+cellCount(1) = cellsno;
+mutantCount(1) = mutantCellsno;
+subColonyCount(1) = subColonies;
+
+prevno = cellsno; 
+day = 0;
+prevday = day;
+t = 1;
+
+whileCondition = setEndCondition(finalCellNo,finalTime,endCondition,cellsno,time);
+
+% Run program until the end condition is met
+while whileCondition  
+    % Apply nutrient movement rule
+    containsNutrient = false;
+    while ~containsNutrient
+        i_r = randi([1 (latticeSize.('y'))],1);
+        j_r = randi([1 (latticeSize.('x'))],1);
+        if lattices.('nutrients')(i_r,j_r) > 0
+            containsNutrient = true;
+            [i_n,j_n] = randomWalk(i_r,j_r,nutrientDiff,latticeSize.('x'),latticeSize.('y'));
+            lattices.('nutrients')(i_n,j_n) = lattices.('nutrients')(i_n,j_n) + 1;
+            lattices.('nutrients')(i_r,j_r) = lattices.('nutrients')(i_r,j_r) - 1;
+        end
+    end
+
+    aliveCellChosen = false;
+    while ~aliveCellChosen
+        % Randomly find a lattice site containing a cell, then apply
+        % budding rules.
+        i_r = randi([iMin iMax],1);
+        j_r = randi([jMin jMax],1);
+
+        if lattices.('states')(i_r,j_r) == 1
+            liveNeighbours = countLiveNeighbours(lattices.('states'),[i_r,j_r]);
+            lattices = updateYeastCell(lattices,i_r,j_r,agarWeight,UNIPOLAR_ON);
+            if liveNeighbours < 8
+                if ~isa(lattices.('cells')(i_r,j_r).('cell'),'double')
+                    % Otherwise, attempt to bud
+                    [~,bud,lattices,cellsno,genoCellsno] = lattices.('cells')(i_r,j_r).('cell').bud(lattices,[i_r,j_r],cellsno,genoCellsno,magnet);
+                    if bud
+                        stateLattice = lattices.('states');
+                        [iMin,iMax,jMin,jMax] = boundaryCoors(stateLattice,iMin,iMax,jMin,jMax,latticeSize.('x'),latticeSize.('y'),true);
+                        
+                    end
+                end
+            end
+           aliveCellChosen = true;
+        end
+    end
+    time = time + 1;
+    day = day + timestep;
+    
+    whileCondition = setEndCondition(finalCellNo,finalTime,endCondition,cellsno,time);
+
+    % Display or save stateLattice.
+    if cellsno - prevno > 100
+        
+        if strcmp(displayType,'show')
+            
+            imageLattice = lattices.('mutants') + 1;
+            image = ind2rgb(imageLattice,map);
+            imshow(image);
+            
+        elseif strcmp(displayType,'save')
+
+            imFileName = strcat(folderName,'/frame',int2str(tt),'.jpg');
+            imwrite(lattices.('states'),imFileName,'jpg')
+            
+            tt = tt + 1;
+        end
+        
+        t = t + 1;
+        
+        prevno = cellsno;
+        
+    end
+    if day - prevday > 1
+        mutantCellsno = genoCellsno(2);
+        prevday = floor(day);
+        [~,subColonies] = countMutants(lattices);
+        a = prevday + 1;
+        cellCount(a) = cellsno;
+        mutantCount(a) = mutantCellsno;
+        subColonyCount(a) = subColonies;
+    end
+end 
+
+wtCellsno = genoCellsno(1);
+mutantCellsno = genoCellsno(2);
+
+cellsnoList = [cellsno wtCellsno mutantCellsno];
+
+prevday = floor(day);
+a = prevday + 1;
+[~,subColonies] = countMutants(lattices);
+cellCount(a) = cellsno;
+mutantCount(a) = mutantCellsno;
+subColonyCount(a) = subColonies;
+cellCount = cellCount(1:a);
+mutantCount = mutantCount(1:a);
+subColonyCount = subColonyCount(1:a);
+
+if strcmp(displayType,'show') 
+    imageLattice = lattices.('mutants') + 1;
+    image = ind2rgb(imageLattice,map);
+    imshow(image);
+    disp('All done!')
+elseif strcmp(displayType,'save')
+    imFileName = strcat(folderName,'/frame',int2str(tt),'.jpg');
+    imwrite(lattices.('states'),imFileName,'jpg')
+end
+end
+
+%% Update Yeast Cell Function
+
+function lattices = updateYeastCell(lattices,i,j,agarWeight,unipolarOn)
+    if isa(lattices.('cells')(i,j).('cell'),'YeastCell')
+        
+        lattices.('states')(i,j) = 1;
+        lattices.('mutants')(i,j) = lattices.('cells')(i,j).('cell').mutant;
+        lattices.('cells')(i,j).('cell') = lattices.('cells')(i,j).('cell').updateBudProb(agarWeight);
+        lattices.('cells')(i,j).('cell') = lattices.('cells')(i,j).('cell').updateBuddability();
+        
+        if lattices.('nutrients')(i,j) > 0
+            lattices.('cells')(i,j).('cell') = lattices.('cells')(i,j).('cell').consumeNutrient();
+            lattices.('nutrients')(i,j) = lattices.('nutrients')(i,j) - 1;
+        end
+        
+        if unipolarOn
+            lattices.('cells')(i,j).('cell') = lattices.('cells')(i,j).('cell').updateUnipolarFrac(lattices.('nutrients')(i,j));
+        end
+        
+    end
+end
+
+%% Find Boundary Coordinates Function
+
+function [iMin,iMax,jMin,jMax] = boundaryCoors(lattice,previMin,previMax,prevjMin,prevjMax,xlatticeSize,ylatticeSize,limit)
+
+    % boundaryCoors gives the minimum and maximum rows containing a cell
+    % and likewise for columns.
+    
+    if limit     
+        if previMax + 1 > ylatticeSize
+            previMax = ylatticeSize;
+        else
+            previMax = previMax + 1;
+        end
+
+        if previMin - 1 < 1
+            previMin = 1;
+        else
+            previMin = previMin - 1;
+        end
+
+        if prevjMax + 1 > xlatticeSize
+            prevjMax = xlatticeSize;
+        else
+            prevjMax = prevjMax + 1;
+        end
+
+        if prevjMin - 1 < 1
+            prevjMin = 1;
+        else
+            prevjMin = prevjMin - 1;
+        end
+        
+        limitedLattice = lattice(previMin:previMax,prevjMin:prevjMax);
+        jMin = find(any(limitedLattice),1,'first') + (prevjMin - 1);
+        jMax = find(any(limitedLattice),1,'last') + (prevjMin - 1);
+
+
+        nRows = any(limitedLattice,2);
+        iMin = find(nRows,1,'first') + (previMin - 1);
+        iMax = find(nRows,1,'last') + (previMin - 1);
+    else
+        jMin = find(any(lattice),1,'first');
+        jMax = find(any(lattice),1,'last');
+
+
+        nRows = any(lattice,2);
+        iMin = find(nRows,1,'first');
+        iMax = find(nRows,1,'last'); 
+    end
+    if isempty(jMin)
+        jMin = -1;
+    end
+    if isempty(jMax)
+        jMax = -1;
+    end
+    if isempty(iMin)
+        iMin = -1;
+    end
+    if isempty(iMax)
+        iMax = -1;
+    end
+end
+
+%% Nutrient Movement Rule
+
+function [i_n,j_n] = randomWalk(i,j,nSteps,xlatticeSize,ylatticeSize)
+
+    % nutrientRandomWalk performs a random walk of nSteps of a nutrient packet at (i,j)
+    
+    step = 0;
+    i_n = i;
+    j_n = j;
+    while step < nSteps
+        A = sign(randn);
+        i_n = i_n + A;
+        if i_n < 1
+            i_n = i_n + 2;
+        elseif i_n > ylatticeSize
+            i_n = i_n - 2;
+        end
+        B = sign(randn);
+        j_n = j_n + B;
+        if j_n < 1
+            j_n = j_n + 2;
+        elseif j_n > xlatticeSize
+            j_n = j_n - 2;
+        end
+        step = step + 1;
+    end
+    
+end
+                
+%% Count Number of Cells
+
+function cellsno = countCells(lattices,iMin,jMin,iMax,jMax)
+
+    % countCells counts the number of cells on the lattice
+    cellsno = 0;
+    
+    latticeSizes = size(lattices.('states'));
+    xlatticeSize = latticeSizes(2);
+    ylatticeSize = latticeSizes(1);
+    if iMin - 1 < 1
+        iMin = 2;
+    end
+    if iMax + 1 > ylatticeSize
+        iMax = ylatticeSize - 1;
+    end
+    
+    if jMin - 1 < 1
+        jMin = 2;
+    end
+    if jMax + 1 > xlatticeSize
+        jMax = xlatticeSize - 1;
+    end
+
+    for i = iMin-1:iMax+1
+       for j = jMin-1:jMax+1
+           if lattices.('states')(i,j) == 1
+               cellsno = cellsno + 1;
+           end
+       end
+    end
+end
+
+%% Count Number of Cells of a Given Genotype
+
+function cellsno = countCellsGenotype(lattices,genoNo,iMin,jMin,iMax,jMax)
+
+    % countCells counts the number of cells on the lattice
+    cellsno = 0;
+    
+    latticeSizes = size(lattices.('mutants'));
+    xlatticeSize = latticeSizes(2);
+    ylatticeSize = latticeSizes(1);
+    if iMin - 1 < 1
+        iMin = 2;
+    end
+    if iMax + 1 > ylatticeSize
+        iMax = ylatticeSize - 1;
+    end
+    
+    if jMin - 1 < 1
+        jMin = 2;
+    end
+    if jMax + 1 > xlatticeSize
+        jMax = xlatticeSize - 1;
+    end
+
+    for i = iMin-1:iMax+1
+       for j = jMin-1:jMax+1
+           if lattices.('mutants')(i,j) == genoNo
+               cellsno = cellsno + 1;
+           end
+       end
+    end
+end
+
+%% Timestep or Cell Count for While Condition
+
+function whileCondition = setEndCondition(FINAL_CELL_COUNT,FINAL_TIMESTEP,TIME_OR_COUNT,cellsno,time)
+    if strcmp(TIME_OR_COUNT,'time')
+        whileCondition = time<FINAL_TIMESTEP;
+    elseif strcmp(TIME_OR_COUNT,'count')
+        whileCondition = cellsno<FINAL_CELL_COUNT;
+    elseif strcmp(TIME_OR_COUNT,'both')
+        whileCondition = (time<FINAL_TIMESTEP) && (cellsno<FINAL_CELL_COUNT);
+    end
+end
+
+%% Count Live Neighbours
+function aliveCellsno = countLiveNeighbours(stateLattice,coordinates)
+    latticeSizes = size(stateLattice);
+    xlatticeSize = latticeSizes(2);
+    ylatticeSize = latticeSizes(1);
+    aliveCellsno = 0;
+    i = coordinates(1);
+    j = coordinates(2);
+    for I = -1:1
+        for J = -1:1
+            if I ~= 0 || J ~= 0
+                if i+I <= ylatticeSize && i+I > 0 && j+J <= xlatticeSize && j+J > 0
+                    aliveCellsno = aliveCellsno + stateLattice(i+I,j+J);
+                end
+            end
+        end
+    end
+end
+
+%% Count Mutant Cells and Subcolonies
+function [mutantCells,subColonies] = countMutants(lattices)
+    mutantLattice = lattices.('mutants');
+    mutantsOnly = (mutantLattice == 2);
+    CC = bwconncomp(mutantsOnly);
+    numPixels = cellfun(@numel,CC.PixelIdxList);
+    mutantCells = sum(numPixels);
+    subColonySizeThresh = 2;
+    numPixelsLarge = numPixels(numPixels > subColonySizeThresh);
+    subColonies = length(numPixelsLarge);
+end
